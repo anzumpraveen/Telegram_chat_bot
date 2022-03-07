@@ -1,5 +1,7 @@
 const teligram = require('node-telegram-bot-api')
 require('dotenv').config();
+const axios = require('axios');
+
 
 const TOKEN = process.env.TOKEN
 
@@ -7,7 +9,6 @@ const bot = new teligram(TOKEN, { polling: true })
 
 
 bot.on('message', (msg) => {
-
     var hi = "hi";
     if (msg.text.toString().toLowerCase().indexOf(hi) === 0) {
         bot.sendMessage(msg.chat.id, "Hello dear user");
@@ -86,4 +87,20 @@ bot.on('message', (msg) => {
 });
 
 
+bot.onText(/\/domath(.+)/, (msg, match) => {
+    let str = match[1]
+    bot.sendMessage(msg.chat.id, eval(str));
+});
 
+bot.onText(/\/weather(.+)/, (msg, match) => {
+    const data = match[1]
+    // console.log(data);
+    axios.get(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/ ${data} ?unitGroup=metric&include=current&key=6RFVTH86QN4A4XQRZ5MR25YUL&contentType=json`).then(resp => {
+        let data_store = resp.data
+        let temp = `Temp : ${data_store['days'][0]["temp"]}`
+        let humidity = `humidity : ${data_store["days"][0]["humidity"]}`
+        bot.sendMessage(msg.chat.id, temp)
+        bot.sendMessage(msg.chat.id, humidity)
+    });
+
+});
